@@ -71,6 +71,37 @@ NO_PROXY=...
 
 No additional proxy configuration is required in the service.
 
+## Backend APIs and service-to-service authentication
+
+The frontend calls its backend server side (never from the browser), authenticating with an API key sent as HTTP
+Basic credentials (`Authorization: Basic base64(clientId:secret)`). This follows the Manage Obligations service
+([DEFRA/waste-obligations-frontend](https://github.com/DEFRA/waste-obligations-frontend)). See the backend's README
+for the access control list it checks.
+
+| Backend                                                                                   | Config                       | Environment variables                                                                                                                 |
+| ----------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [waste-submit-reg-packaging-api](https://github.com/DEFRA/waste-submit-reg-packaging-api) | `wasteSubmitRegPackagingApi` | `WASTE_SUBMIT_REG_PACKAGING_API_BASE_URL`, `WASTE_SUBMIT_REG_PACKAGING_API_CLIENT_ID`, `WASTE_SUBMIT_REG_PACKAGING_API_CLIENT_SECRET` |
+
+In CDP:
+
+- The base URL and client id (`EprPackagingSubmitFrontend`) go in app config.
+- `WASTE_SUBMIT_REG_PACKAGING_API_CLIENT_SECRET` is a **CDP secret**. It must match the backend's `Acl__Clients__EprPackagingSubmitFrontend__Secret`.
+
+The home page calls the backend's authenticated `GET /describe` endpoint. It shows **Healthy** when the backend
+accepts our credentials, and **Unavailable** when it is unreachable or refuses them. Each failure is logged as a
+warning, and the page still renders.
+
+`/health` never requires authentication and never calls a backend. CDP polls it.
+
+Outside production, the defaults match the backend's `Developer` client (`Developer` / `developer-pwd`) on
+`http://localhost:8085`, its default port. In production (CDP) there are no defaults, so a missing setting shows the
+backend as **Unavailable** and logs that it is not configured. To run it locally:
+
+```bash
+# in waste-submit-reg-packaging-api
+dotnet run --project WasteSubmitRegPackagingApi
+```
+
 ## Local Development
 
 ### Setup
