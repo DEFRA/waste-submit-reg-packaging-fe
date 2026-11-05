@@ -11,6 +11,25 @@ on:
       - ready_for_review
 
 jobs:
+  # Builds the PR's code into an image and runs waste-submit-journey-tests against it in Docker Compose.
+  journey-tests:
+    name: Run Journey Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # the action's Docker Hub login assumes this repo's CDP build role
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Build the PR's image
+        run: docker build --tag defradigital/waste-submit-reg-packaging-fe:${{ github.sha }} .
+
+      - name: Run the journey tests
+        uses: DEFRA/waste-submit-journey-tests/run-journey-tests@main
+        with:
+          waste-submit-reg-packaging-fe: ${{ github.sha }}
+
   pr-validator:
     name: Run Pull Request Checks
     runs-on: ubuntu-latest
