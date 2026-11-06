@@ -84,8 +84,8 @@ for the access control list it checks.
 
 In CDP:
 
-- The base URL and client id (`EprPackagingSubmitFrontend`) go in app config.
-- `WASTE_SUBMIT_REG_PACKAGING_API_CLIENT_SECRET` is a **CDP secret**. It must match the backend's `Acl__Clients__EprPackagingSubmitFrontend__Secret`.
+- The client id, `WasteSubmitRegPackagingFrontend`, is in app config's `defaults.env`, as it is the same in every environment. The base URL is set per environment.
+- `WASTE_SUBMIT_REG_PACKAGING_API_CLIENT_SECRET` is a **CDP secret**. It must match the backend's `Acl__Clients__WasteSubmitRegPackagingFrontend__Secret`.
 
 The home page calls the backend's authenticated `GET /describe` endpoint. It shows **Healthy** when the backend
 accepts our credentials, and **Unavailable** when it is unreachable or refuses them. Each failure is logged as a
