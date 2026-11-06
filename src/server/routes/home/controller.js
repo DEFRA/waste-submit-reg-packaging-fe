@@ -1,12 +1,17 @@
+import { getServiceStatuses } from './service-statuses.js'
+
 /**
- * A GDS styled example home page controller.
- * Provided as an example, remove or modify as required.
+ * The home page. Shows whether each backend accepts this frontend's service-to-service
+ * credentials.
  */
 export const homeController = {
-  handler(_request, h) {
+  async handler(request, h) {
+    const serviceStatuses = await getServiceStatuses(request.logger)
+
     return h.view('home/index', {
       pageTitle: 'Home',
-      heading: 'Home'
+      heading: 'Home',
+      serviceStatuses
     })
   }
 }
