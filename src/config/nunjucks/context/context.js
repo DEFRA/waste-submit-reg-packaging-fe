@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { config } from '#/config/config.js'
 import { buildNavigation } from './build-navigation.js'
 import { createLogger } from '#/server/common/helpers/logging/logger.js'
+import { isAnalyticsEnabled } from '#/server/common/analytics/enabled.js'
 
 const logger = createLogger()
 const assetPath = config.get('assetPath')
@@ -12,9 +13,18 @@ const manifestPath = path.join(
   '.public/.vite/manifest.json'
 )
 
-const googleTagManagerKey = config.get('googleAnalytics.googleTagManagerKey')
-if (!googleTagManagerKey && config.get('isProduction')) {
-  logger.warn('Analytics googleTagManagerKey not set')
+// Analytics only runs when the flag and both ids are set (see enabled.js).
+// Flag on without both ids is a misconfiguration, so say so rather than
+// silently not tracking.
+const analyticsTag = {
+  isEnabled: isAnalyticsEnabled(),
+  containerId: config.get('analytics.containerId'),
+  measurementId: config.get('analytics.measurementId')
+}
+if (config.get('analytics.isEnabled') && !analyticsTag.isEnabled) {
+  logger.warn(
+    'Analytics is enabled but GOOGLE_TAG_MANAGER_KEY or GOOGLE_ANALYTICS_MEASUREMENT_ID is not set, so analytics is off'
+  )
 }
 
 let viteManifest
@@ -33,7 +43,8 @@ export function context(request) {
     serviceName: config.get('serviceName'),
     serviceUrl: '/',
     cookieName: config.get('cookieConsent.name'),
-    googleTagManagerKey,
+    // Not `analytics`: the cookies page passes its own `analytics` (radios)
+    analyticsTag,
     breadcrumbs: [],
     navigation: buildNavigation(request),
     getAssetPath(asset) {

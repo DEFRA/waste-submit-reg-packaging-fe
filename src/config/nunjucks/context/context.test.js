@@ -3,6 +3,14 @@ import { vi } from 'vitest'
 const mockReadFileSync = vi.fn()
 const mockLoggerError = vi.fn()
 const mockLoggerWarn = vi.fn()
+// Analytics is pinned off unless a test says otherwise, so results do not
+// depend on the environment the suite runs in.
+const analyticsOff = vi.hoisted(() => ({
+  'analytics.isEnabled': false,
+  'analytics.containerId': '',
+  'analytics.measurementId': ''
+}))
+const configOverrides = vi.hoisted(() => ({ values: { ...analyticsOff } }))
 
 vi.mock('node:fs', async () => {
   const nodeFs = await import('node:fs')
@@ -21,6 +29,7 @@ vi.mock(import('#/config/config.js'), async (importOriginal) => {
     config: {
       get(key) {
         if (key === 'isProduction') return true
+        if (key in configOverrides.values) return configOverrides.values[key]
         return originalModule.config.get(key)
       }
     }
@@ -73,7 +82,12 @@ describe('context and cache', () => {
             }
           ],
           serviceName: 'waste-submit-reg-packaging-fe',
-          serviceUrl: '/'
+          serviceUrl: '/',
+          analyticsTag: {
+            isEnabled: false,
+            containerId: '',
+            measurementId: ''
+          }
         })
       })
 
@@ -165,6 +179,48 @@ describe('context and cache', () => {
           serviceUrl: '/'
         })
       })
+    })
+  })
+
+  describe('#context analytics', () => {
+    const mockRequest = { path: '/' }
+
+    afterEach(() => {
+      configOverrides.values = { ...analyticsOff }
+    })
+
+    test('Should provide the analytics ids when analytics is enabled', async () => {
+      configOverrides.values = {
+        'analytics.isEnabled': true,
+        'analytics.containerId': 'GTM-TESTONLY',
+        'analytics.measurementId': 'G-TESTONLY01'
+      }
+      mockLoggerWarn.mockReset()
+
+      const { context } = await import('./context.js')
+
+      expect(context(mockRequest).analyticsTag).toStrictEqual({
+        isEnabled: true,
+        containerId: 'GTM-TESTONLY',
+        measurementId: 'G-TESTONLY01'
+      })
+      expect(mockLoggerWarn).not.toHaveBeenCalled()
+    })
+
+    test('Should warn when analytics is switched on without both ids', async () => {
+      configOverrides.values = {
+        'analytics.isEnabled': true,
+        'analytics.containerId': 'GTM-TESTONLY',
+        'analytics.measurementId': ''
+      }
+      mockLoggerWarn.mockReset()
+
+      const { context } = await import('./context.js')
+
+      expect(context(mockRequest).analyticsTag.isEnabled).toBe(false)
+      expect(mockLoggerWarn).toHaveBeenCalledWith(
+        'Analytics is enabled but GOOGLE_TAG_MANAGER_KEY or GOOGLE_ANALYTICS_MEASUREMENT_ID is not set, so analytics is off'
+      )
     })
   })
 })

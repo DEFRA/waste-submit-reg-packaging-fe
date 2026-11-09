@@ -1,18 +1,18 @@
 {#
-  Google Tag Manager — head script.
+  Google Tag Manager — head.
 
-  This is the standard GTM snippet that loads the gtm.js library.
-  It MUST have a nonce attribute to satisfy CSP. The nonce is generated
-  by Blankie for each response and made available as {{ nonce }}.
+  Publishes the GTM container id and GA4 measurement id for analytics.js,
+  which queues the page's controls (tag blocklist, a policy that refuses any
+  tag other than this measurement id, consent defaults) and then loads
+  gtm.js. Loading it from a bundled module rather than an inline snippet
+  means the container never sees a CSP nonce it could pass on to scripts it
+  injects.
 
-  This template is only included when cookiesPolicy.analytics is true
-  (see layout.njk), so GTM never loads without consent.
+  This template is only included when analytics is enabled and
+  cookiesPolicy.analytics is true (see layouts/page.njk), so GTM never loads
+  without consent.
 #}
 
-{% if googleTagManagerKey %}
-  <script nonce="{{ nonce }}">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','{{ googleTagManagerKey }}');</script>
-{% endif %}
+<meta name="analytics-container-id" content="{{ analyticsTag.containerId }}">
+<meta name="analytics-measurement-id" content="{{ analyticsTag.measurementId }}">
+<script type="module" src="{{ getAssetPath('src/client/javascripts/analytics.js') }}"></script>

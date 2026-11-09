@@ -25,7 +25,9 @@
     The data attributes on the banner container pass server-generated
     values to the client-side script:
     - data-crumb: the CSRF token for the XHR POST
-    - data-gtm-key: the GTM container ID to load on acceptance
+    - data-analytics-container-id / data-analytics-measurement-id: the GTM
+      container and GA4 measurement ids to start on acceptance (only set
+      when analytics is enabled)
 
   WHY BOTH MODES?
     GOV.UK services must work without JavaScript (WCAG 2.2, progressive
@@ -62,7 +64,14 @@
     classes: "js-cookies-container js-cookies-banner",
     attributes: {
       "data-crumb": crumb,
-      "data-gtm-key": googleTagManagerKey,
+      "data-analytics-container-id": {
+        value: analyticsTag.containerId if analyticsTag.isEnabled else undefined,
+        optional: true
+      },
+      "data-analytics-measurement-id": {
+        value: analyticsTag.measurementId if analyticsTag.isEnabled else undefined,
+        optional: true
+      },
       "data-nosnippet": ""
     },
     messages: [

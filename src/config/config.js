@@ -15,6 +15,33 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 convict.addFormats(convictFormatWithValidator)
 
+/**
+ * An optional id that, when set, must match the given pattern exactly. The
+ * page refuses malformed ids client-side, so catching them here fails the
+ * deploy instead of silently loosening the CSP for a tag that never loads.
+ * @param {string} name
+ * @param {RegExp} pattern
+ */
+const optionalIdFormat = (name, pattern) => ({
+  name,
+  validate(value) {
+    if (value !== '' && !pattern.test(value)) {
+      throw new Error(`must be empty or match ${pattern}`)
+    }
+  }
+})
+
+convict.addFormats({
+  'optional-gtm-container-id': optionalIdFormat(
+    'optional-gtm-container-id',
+    /^GTM-[A-Z0-9]+$/
+  ),
+  'optional-ga-measurement-id': optionalIdFormat(
+    'optional-ga-measurement-id',
+    /^G-[A-Z0-9]+$/
+  )
+})
+
 export const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -251,12 +278,30 @@ export const config = convict({
       }
     }
   },
-  googleAnalytics: {
-    googleTagManagerKey: {
-      doc: 'Google Tag Manager container ID (e.g. GTM-XXXXXXXX)',
-      format: String,
+  analytics: {
+    isEnabled: {
+      doc: 'Is analytics enabled',
+      format: Boolean,
+      default: false,
+      env: 'ANALYTICS_ENABLED'
+    },
+    measurementId: {
+      doc: 'Measurement id of the analytics property to report to (e.g. G-XXXXXXXXXX). Must match the Google tag in the container: the page refuses any other, so repointing the tag in Tag Manager stops reporting until this changes',
+      format: 'optional-ga-measurement-id',
+      default: '',
+      env: 'GOOGLE_ANALYTICS_MEASUREMENT_ID'
+    },
+    containerId: {
+      doc: 'Id of the tag manager container that loads the analytics tag (e.g. GTM-XXXXXXXX)',
+      format: 'optional-gtm-container-id',
       default: '',
       env: 'GOOGLE_TAG_MANAGER_KEY'
+    },
+    previewEnabled: {
+      doc: 'Let the tag manager preview console connect, for checking the container',
+      format: Boolean,
+      default: false,
+      env: 'ANALYTICS_PREVIEW_ENABLED'
     }
   }
 })

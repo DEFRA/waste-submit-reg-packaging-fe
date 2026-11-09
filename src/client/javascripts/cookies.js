@@ -7,11 +7,16 @@
 // KEY BEHAVIOURS:
 //
 // 1. IMMEDIATE GTM LOADING ON ACCEPT:
-//    When the user clicks "Accept analytics cookies", loadGoogleAnalytics()
-//    dynamically creates a <script> element pointing to GTM. This means
-//    analytics start tracking immediately — the user doesn't need to wait
-//    for a page reload. The GTM container ID is read from a data attribute
-//    on the banner element (set server-side from config).
+//    When the user clicks "Accept analytics cookies", analytics.js is
+//    imported dynamically and its startAnalytics() queues the page's controls
+//    and creates a <script> element pointing to GTM. It is a dynamic import
+//    so that application.js never depends on it: if a blocker refuses it,
+//    only analytics fails. This means analytics start tracking
+//    immediately — the user doesn't need to wait for a page reload. The GTM
+//    container ID and GA4 measurement ID are read from data attributes on
+//    the banner element (set server-side from config, only when analytics is
+//    enabled). Both ids are validated against strict patterns to prevent
+//    script injection via a tampered data attribute.
 //
 // 2. GA COOKIE DELETION ON REJECT:
 //    When the user clicks "Reject analytics cookies", ALL Google Analytics
@@ -84,25 +89,19 @@ function deleteGoogleAnalyticsCookies() {
   }
 }
 
-// Dynamically load Google Tag Manager by creating a script element.
-// This is called immediately when the user clicks "Accept" — no page
-// reload needed. GTM then loads GA which starts setting cookies.
-//
-// The GTM key is validated against a strict pattern to prevent
-// script injection via a tampered data attribute.
-function loadGoogleAnalytics(gtmKey) {
-  if (!gtmKey || !/^GTM-[A-Z0-9]+$/.test(gtmKey)) {
+// Load analytics.js only on acceptance, and only when the server gave us ids
+// (it does not when analytics is disabled). A failed load (e.g. blocked by
+// the user's browser) just means no analytics.
+function loadAnalytics(containerId, measurementId) {
+  if (!containerId || !measurementId) {
     return
   }
 
-  globalThis.dataLayer = globalThis.dataLayer || []
-  globalThis.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' })
-
-  const script = document.createElement('script')
-  script.async = true
-  script.src = `https://www.googletagmanager.com/gtm.js?id=${gtmKey}`
-
-  document.head.appendChild(script)
+  import('./analytics.js')
+    .then(({ startAnalytics }) =>
+      startAnalytics({ containerId, measurementId })
+    )
+    .catch(() => {})
 }
 
 export default {
@@ -170,7 +169,8 @@ export default {
 
     // Read server-generated values from data attributes
     const crumb = cookieContainer.dataset.crumb
-    const gtmKey = cookieContainer.dataset.gtmKey
+    const containerId = cookieContainer.dataset.analyticsContainerId
+    const measurementId = cookieContainer.dataset.analyticsMeasurementId
 
     // Send the consent choice to the server via XHR.
     // The crumb (CSRF token) is sent in the JSON body.
@@ -232,7 +232,7 @@ export default {
     acceptButton?.addEventListener('click', (event) => {
       event.preventDefault()
       showBanner(acceptedBanner)
-      loadGoogleAnalytics(gtmKey)
+      loadAnalytics(containerId, measurementId)
       submitPreference(true, () => {})
     })
 

@@ -102,7 +102,8 @@
             <td class="govuk-table__cell">2 years</td>
           </tr>
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">_ga_&lt;container-id&gt;</td>
+            {# GA4 names this cookie after the measurement id without its "G-" prefix #}
+            <td class="govuk-table__cell">{% if analyticsTag.measurementId %}_ga_{{ analyticsTag.measurementId | replace("G-", "") }}{% else %}_ga_&lt;measurement-id&gt;{% endif %}</td>
             <td class="govuk-table__cell">Used by Google Analytics to persist session state.</td>
             <td class="govuk-table__cell">2 years</td>
           </tr>

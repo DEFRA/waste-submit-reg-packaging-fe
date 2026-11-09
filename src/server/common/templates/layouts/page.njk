@@ -18,7 +18,8 @@
 {% endblock %}
 
 {% block head %}
-  {% if cookiesPolicy.analytics %}
+  {# Only load GTM when analytics is enabled and the user has accepted analytics cookies #}
+  {% if analyticsTag.isEnabled and cookiesPolicy.analytics %}
     {% include "../partials/google-tag-manager/head-content.njk" %}
   {% endif %}
 
@@ -30,11 +31,6 @@
   {# Show banner only if user hasn't made a choice yet #}
   {% if not cookiesPolicy.confirmed %}
     {% include "../partials/cookies/banner.njk" %}
-  {% endif %}
-
-  {# Only load GTM when user has accepted analytics cookies #}
-  {% if cookiesPolicy.analytics %}
-    {% include "../partials/google-tag-manager/body-content.njk" %}
   {% endif %}
 {% endblock %}
 
