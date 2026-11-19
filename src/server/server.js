@@ -69,7 +69,10 @@ export async function createServer() {
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
-  server.ext('onPreResponse', catchAll)
+  // catchAll replaces an error with a rendered error page. It must run before
+  // blankie, which adds the Content-Security-Policy header (and the nonces the
+  // view uses) to whatever response it finds; otherwise error pages have no CSP.
+  server.ext('onPreResponse', catchAll, { before: ['blankie'] })
 
   return server
 }
