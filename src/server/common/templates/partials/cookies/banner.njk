@@ -45,14 +45,14 @@
 {% endset %}
 
 {% set acceptedHtml %}
-  <p class="govuk-body">You've accepted analytics cookies. You can <a class="govuk-link" href="/cookies">change your cookie settings</a> at any time.</p>
+  <p class="govuk-body">You've accepted analytics cookies. You can <a class="govuk-link" href="{{ cookiesHref }}">change your cookie settings</a> at any time.</p>
 {% endset %}
 
 {% set rejectedHtml %}
-  <p class="govuk-body">You've rejected analytics cookies. You can <a class="govuk-link" href="/cookies">change your cookie settings</a> at any time.</p>
+  <p class="govuk-body">You've rejected analytics cookies. You can <a class="govuk-link" href="{{ cookiesHref }}">change your cookie settings</a> at any time.</p>
 {% endset %}
 
-<form action="/cookies" method="post" novalidate>
+<form action="{{ cookiesHref }}" method="post" novalidate>
   <input type="hidden" name="crumb" value="{{ crumb }}">
   <input type="hidden" name="async" value="false">
   <input type="hidden" name="returnUrl" value="{{ currentPath }}">
@@ -87,7 +87,7 @@
           },
           {
             text: "View cookies",
-            href: "/cookies"
+            href: cookiesHref
           }
         ]
       },

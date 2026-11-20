@@ -111,7 +111,7 @@
 
       <h2 class="govuk-heading-m">Change your cookie settings</h2>
 
-      <form action="/cookies" method="post" novalidate>
+      <form action="{{ cookiesHref }}" method="post" novalidate>
         <input type="hidden" name="crumb" value="{{ crumb }}">
         <input type="hidden" name="async" value="false">
 

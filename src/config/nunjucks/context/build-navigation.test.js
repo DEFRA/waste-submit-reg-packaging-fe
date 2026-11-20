@@ -36,4 +36,26 @@ describe('#buildNavigation', () => {
       }
     ])
   })
+
+  test('Should prefix links with the forwarded prefix', () => {
+    expect(
+      buildNavigation(
+        mockRequest({
+          path: '/about',
+          headers: { 'x-forwarded-prefix': '/submit-packaging' }
+        })
+      )
+    ).toEqual([
+      {
+        current: false,
+        text: 'Home',
+        href: '/submit-packaging/'
+      },
+      {
+        current: true,
+        text: 'About',
+        href: '/submit-packaging/about'
+      }
+    ])
+  })
 })
