@@ -207,6 +207,57 @@ export const config = convict({
       default: isDevelopment
     }
   },
+  // User sign-in with Azure AD B2C. The settings have the same names as waste-obligations-frontend.
+  auth: {
+    azureAdB2c: {
+      instance: {
+        doc: 'Azure AD B2C instance (e.g. https://tenant.b2clogin.com)',
+        format: String,
+        default: '',
+        env: 'AZURE_AD_B2C_INSTANCE'
+      },
+      domain: {
+        doc: 'Azure AD B2C domain (e.g. tenant.onmicrosoft.com)',
+        format: String,
+        default: '',
+        env: 'AZURE_AD_B2C_DOMAIN'
+      },
+      userFlow: {
+        doc: 'Azure AD B2C user flow or custom policy (e.g. B2C_1A_EPR_SignUpSignIn)',
+        format: String,
+        default: '',
+        env: 'AZURE_AD_B2C_USER_FLOW'
+      },
+      clientId: {
+        doc: 'Client ID of this frontend’s Azure AD B2C app registration',
+        format: String,
+        default: '',
+        env: 'AZURE_AD_B2C_CLIENT_ID'
+      },
+      clientSecret: {
+        doc: 'Client secret of this frontend’s Azure AD B2C app registration. Set as a CDP secret',
+        format: String,
+        default: '',
+        env: 'AZURE_AD_B2C_CLIENT_SECRET',
+        sensitive: true
+      },
+      cookie: {
+        password: {
+          doc: 'Password that encrypts the cookie holding the OAuth state during sign-in. At least 32 characters. Set as a CDP secret',
+          format: String,
+          default: 'the-password-must-be-at-least-32-characters-long',
+          env: 'AUTH_COOKIE_PASSWORD',
+          sensitive: true
+        },
+        secure: {
+          doc: 'Set the secure flag on the OAuth state cookie, and send B2C an https redirect URI',
+          format: Boolean,
+          default: isProduction,
+          env: 'AUTH_COOKIE_SECURE'
+        }
+      }
+    }
+  },
   // Backend API. The local defaults match the backend's Developer client and are not used in
   // production (CDP), where a missing setting must fail loudly rather than fall back to them.
   wasteSubmitRegPackagingApi: {
