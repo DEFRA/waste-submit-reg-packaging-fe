@@ -92,6 +92,35 @@ describe('context and cache', () => {
           )
         })
       })
+
+      describe('Behind a reverse proxy', () => {
+        let prefixedResult
+
+        beforeEach(() => {
+          prefixedResult = contextImport.context({
+            path: '/',
+            headers: { 'x-forwarded-prefix': '/submit-packaging' }
+          })
+        })
+
+        test('Should prefix browser-facing URLs', () => {
+          expect(prefixedResult).toMatchObject({
+            assetPath: '/submit-packaging/public/assets',
+            serviceUrl: '/submit-packaging/',
+            cookiesHref: '/submit-packaging/cookies',
+            navigation: [
+              { href: '/submit-packaging/' },
+              { href: '/submit-packaging/about' }
+            ]
+          })
+        })
+
+        test('Should prefix asset paths', () => {
+          expect(prefixedResult.getAssetPath('application.js')).toBe(
+            '/submit-packaging/public/application.js'
+          )
+        })
+      })
     })
 
     describe('When Vite manifest file read fails', () => {
