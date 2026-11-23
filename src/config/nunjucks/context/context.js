@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { config } from '#/config/config.js'
 import { buildNavigation } from './build-navigation.js'
 import { createLogger } from '#/server/common/helpers/logging/logger.js'
+import { withForwardedPrefix } from '#/server/common/helpers/proxy/forwarded-prefix.js'
 
 const logger = createLogger()
 const assetPath = config.get('assetPath')
@@ -37,10 +38,13 @@ export function context(request) {
     }
   }
 
+  const externalAssetPath = withForwardedPrefix(request, assetPath)
+
   return {
-    assetPath: `${assetPath}/assets`,
+    assetPath: `${externalAssetPath}/assets`,
     serviceName: config.get('serviceName'),
-    serviceUrl: '/',
+    serviceUrl: withForwardedPrefix(request, '/'),
+    cookiesHref: withForwardedPrefix(request, '/cookies'),
     cookieName: config.get('cookieConsent.name'),
     googleTagManagerKey,
     breadcrumbs: [],
@@ -48,11 +52,11 @@ export function context(request) {
     isSignedIn: isSignedIn(request),
     getAssetPath(asset) {
       if (!config.get('isProduction')) {
-        return `${assetPath}/${asset}`
+        return `${externalAssetPath}/${asset}`
       }
 
       const viteAssetPath = viteManifest?.[asset]?.file
-      return `${assetPath}/${viteAssetPath ?? asset}`
+      return `${externalAssetPath}/${viteAssetPath ?? asset}`
     }
   }
 }

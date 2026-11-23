@@ -184,7 +184,8 @@ export default {
     const submitPreference = (accepted, onSuccess) => {
       const xhr = new XMLHttpRequest() // eslint-disable-line no-undef
 
-      xhr.open('POST', '/cookies', true)
+      // The form action carries any reverse-proxy path prefix.
+      xhr.open('POST', formElement?.action ?? '/cookies', true)
       xhr.setRequestHeader('Content-Type', 'application/json')
 
       xhr.onload = () => {

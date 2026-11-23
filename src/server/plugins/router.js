@@ -27,9 +27,16 @@ export const router = {
       if (!config.get('isProduction') && !config.get('isTest')) {
         await (async () => {
           const createViteServer = (await import('vite')).createServer
+          // LOCAL DEVELOPMENT ONLY. vite.config.js keeps base: './' so
+          // production builds emit relative URLs that work beneath
+          // X-Forwarded-Prefix. In middleware mode Vite needs an absolute
+          // base so font and module URLs reach this /public mount. Those
+          // /public/... URLs are not prefix-aware, so fonts and JS modules
+          // can 404 when browsing the dev server through a reverse proxy.
           const vite = await createViteServer({
             server: { middlewareMode: true },
-            appType: 'custom'
+            appType: 'custom',
+            base: '/public/'
           })
 
           await server.register({

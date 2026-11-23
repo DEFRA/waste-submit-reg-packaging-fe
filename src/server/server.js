@@ -18,6 +18,7 @@ import { cookieConsent } from '#/server/plugins/cookie-consent.js'
 import { csrf } from '#/server/plugins/csrf.js'
 import { azureAdB2cAuth } from '#/server/plugins/azure-ad-b2c-auth.js'
 import { requireAuth } from '#/server/plugins/require-auth.js'
+import { forwardedPrefixRedirects } from './plugins/forwarded-prefix-redirects.js'
 
 /**
  * @param {object} [options]
@@ -71,6 +72,7 @@ export async function createServer({ authPlugin = azureAdB2cAuth } = {}) {
     sessionCache,
     authPlugin,
     requireAuth,
+    forwardedPrefixRedirects,
     nunjucksConfig,
     Scooter,
     csrf,
@@ -78,7 +80,10 @@ export async function createServer({ authPlugin = azureAdB2cAuth } = {}) {
     router // Register all the controllers/routes defined in src/server/router.js
   ])
 
-  server.ext('onPreResponse', catchAll)
+  // catchAll replaces an error with a rendered error page. It must run before
+  // blankie, which adds the Content-Security-Policy header (and the nonces the
+  // view uses) to whatever response it finds; otherwise error pages have no CSP.
+  server.ext('onPreResponse', catchAll, { before: ['blankie'] })
 
   return server
 }
