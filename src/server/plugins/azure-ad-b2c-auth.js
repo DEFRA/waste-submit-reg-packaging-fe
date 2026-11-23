@@ -18,6 +18,31 @@ export function decodeIdTokenProfile(idToken) {
   }
 }
 
+function isConfigured({ instance, domain, userFlow, clientId, clientSecret }) {
+  return Boolean(instance && domain && userFlow && clientId && clientSecret)
+}
+
+function getAuthority({ instance, domain, userFlow }) {
+  return `${instance.replace(/\/+$/, '')}/${domain}/${userFlow}`
+}
+
+/**
+ * The B2C URL that ends the user's B2C session and then sends them to postLogoutRedirectUri.
+ * Returns null when B2C is not configured, as there is no B2C session to end.
+ */
+export function getSignOutUrl(postLogoutRedirectUri) {
+  const settings = config.get('auth.azureAdB2c')
+
+  if (!isConfigured(settings)) {
+    return null
+  }
+
+  const url = new URL(`${getAuthority(settings)}/oauth2/v2.0/logout`)
+  url.searchParams.set('post_logout_redirect_uri', postLogoutRedirectUri)
+
+  return url.href
+}
+
 /**
  * Bell refuses to register without a client ID. Rather than stop the service from starting
  * (which would also take down /health), sign-in fails with an error until B2C is configured.
@@ -46,17 +71,17 @@ export const azureAdB2cAuth = {
   plugin: {
     name: 'azure-ad-b2c-auth',
     async register(server) {
-      const { instance, domain, userFlow, clientId, clientSecret, cookie } =
-        config.get('auth.azureAdB2c')
+      const settings = config.get('auth.azureAdB2c')
+      const { clientId, clientSecret, cookie } = settings
 
-      if (!instance || !domain || !userFlow || !clientId || !clientSecret) {
+      if (!isConfigured(settings)) {
         registerNotConfiguredStrategy(server)
         return
       }
 
       await server.register(bell)
 
-      const authority = `${instance.replace(/\/+$/, '')}/${domain}/${userFlow}`
+      const authority = getAuthority(settings)
 
       server.auth.strategy(AZURE_AD_B2C_AUTH_STRATEGY, 'bell', {
         provider: {

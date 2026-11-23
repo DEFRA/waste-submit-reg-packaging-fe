@@ -76,8 +76,9 @@ No additional proxy configuration is required in the service.
 Users sign in with Azure AD B2C, following the Manage Obligations service
 ([DEFRA/waste-obligations-frontend](https://github.com/DEFRA/waste-obligations-frontend)). Every page requires
 sign-in except `/health`, `/cookies` and the static assets. A signed-out user is sent to `/signin-oidc`, which
-redirects to B2C, and is returned to the page they asked for. There are no roles and no sign-out yet: the session
-lasts until its cookie expires (`SESSION_COOKIE_TTL`, four hours by default).
+redirects to B2C, and is returned to the page they asked for. The session lasts until its cookie expires
+(`SESSION_COOKIE_TTL`, four hours by default) or the user selects **Sign out** in the header. `/sign-out` ends the
+session here and then at B2C, which returns the user to this service's home page.
 
 | Environment variable         | Value                                                                           |
 | ---------------------------- | ------------------------------------------------------------------------------- |

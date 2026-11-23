@@ -84,6 +84,46 @@ describe('Sign-in, with a mock identity provider', () => {
       'Sorry, there is a problem signing you in'
     )
   })
+
+  test('Should show a sign out link to signed-in users', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/about',
+      headers: await signIn(server)
+    })
+
+    expect(response.result).toContain('href="/sign-out"')
+  })
+
+  test('Should not show a sign out link to signed-out users', async () => {
+    const response = await server.inject({ method: 'GET', url: '/cookies' })
+
+    expect(response.statusCode).toBe(statusCodes.ok)
+    expect(response.result).not.toContain('href="/sign-out"')
+  })
+
+  test('Should sign the user out', async () => {
+    const authHeaders = await signIn(server)
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/sign-out',
+      headers: authHeaders
+    })
+
+    // B2C is not configured in tests, so there is no B2C session to end.
+    expect(response.statusCode).toBe(found)
+    expect(response.headers.location).toBe('/')
+
+    const about = await server.inject({
+      method: 'GET',
+      url: '/about',
+      headers: authHeaders
+    })
+
+    expect(about.statusCode).toBe(found)
+    expect(about.headers.location).toBe('/signin-oidc')
+  })
 })
 
 describe('Sign-in, without Azure AD B2C configured', () => {
@@ -155,5 +195,23 @@ describe('Sign-in, with Azure AD B2C configured', () => {
       redirect_uri: 'http://localhost:3000/signin-oidc',
       scope: 'openid profile offline_access'
     })
+  })
+
+  test('Should sign out of B2C and return to this service', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/sign-out',
+      headers: { host: 'localhost:3000' }
+    })
+
+    expect(response.statusCode).toBe(found)
+
+    const location = new URL(response.headers.location)
+    expect(`${location.origin}${location.pathname}`).toBe(
+      'https://tenant.b2clogin.com/tenant.onmicrosoft.com/B2C_1A_SignUpSignIn/oauth2/v2.0/logout'
+    )
+    expect(location.searchParams.get('post_logout_redirect_uri')).toBe(
+      'http://localhost:3000/'
+    )
   })
 })

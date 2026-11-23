@@ -1,6 +1,9 @@
 import { config } from '#/config/config.js'
-import { AZURE_AD_B2C_AUTH_STRATEGY } from '#/server/plugins/azure-ad-b2c-auth.js'
-import { SIGN_IN_PATH } from '#/server/plugins/require-auth.js'
+import {
+  AZURE_AD_B2C_AUTH_STRATEGY,
+  getSignOutUrl
+} from '#/server/plugins/azure-ad-b2c-auth.js'
+import { SIGN_IN_PATH, SIGN_OUT_PATH } from '#/server/plugins/require-auth.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { isSafeRedirect } from '#/server/common/helpers/is-safe-redirect.js'
 
@@ -51,9 +54,25 @@ const signInController = {
   }
 }
 
+const signOutController = {
+  handler(request, h) {
+    request.yar.reset()
+
+    // As with the sign-in redirect URI, TLS ends in front of the app, so the secure cookie
+    // setting decides whether the URI B2C returns the user to is https.
+    const protocol = config.get('auth.azureAdB2c.cookie.secure')
+      ? 'https'
+      : 'http'
+    const signOutUrl = getSignOutUrl(`${protocol}://${request.info.host}/`)
+
+    return h.redirect(signOutUrl ?? '/')
+  }
+}
+
 /**
- * The sign-in route. Requesting it starts sign-in with Azure AD B2C, and it is the redirect
- * URI that B2C returns the user to.
+ * The sign-in route, and the sign-out route. Requesting /signin-oidc starts sign-in with
+ * Azure AD B2C, and it is the redirect URI that B2C returns the user to. /sign-out ends the
+ * session here and at B2C.
  */
 export const auth = {
   plugin: {
@@ -71,6 +90,12 @@ export const auth = {
           }
         },
         ...signInController
+      })
+
+      server.route({
+        method: 'GET',
+        path: SIGN_OUT_PATH,
+        ...signOutController
       })
     }
   }

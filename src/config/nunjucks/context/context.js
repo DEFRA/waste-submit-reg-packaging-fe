@@ -19,6 +19,15 @@ if (!googleTagManagerKey && config.get('isProduction')) {
 
 let viteManifest
 
+function isSignedIn(request) {
+  try {
+    return Boolean(request?.yar?.get('credentials'))
+  } catch {
+    // Error pages can render before the session is loaded, when yar.get throws.
+    return false
+  }
+}
+
 export function context(request) {
   if (config.get('isProduction') && !viteManifest) {
     try {
@@ -36,6 +45,7 @@ export function context(request) {
     googleTagManagerKey,
     breadcrumbs: [],
     navigation: buildNavigation(request),
+    isSignedIn: isSignedIn(request),
     getAssetPath(asset) {
       if (!config.get('isProduction')) {
         return `${assetPath}/${asset}`

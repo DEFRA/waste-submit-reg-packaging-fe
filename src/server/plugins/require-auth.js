@@ -2,13 +2,15 @@ import { config } from '#/config/config.js'
 import { isSafeRedirect } from '#/server/common/helpers/is-safe-redirect.js'
 
 export const SIGN_IN_PATH = '/signin-oidc'
+export const SIGN_OUT_PATH = '/sign-out'
 
 // Everything else requires the user to be signed in.
 const PUBLIC_PATHS = new Set([
   '/health',
   '/cookies',
   '/favicon.ico',
-  SIGN_IN_PATH
+  SIGN_IN_PATH,
+  SIGN_OUT_PATH
 ])
 
 export function isPublicPath(path) {
