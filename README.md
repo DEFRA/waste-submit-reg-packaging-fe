@@ -231,18 +231,18 @@ A test suite for this application exists within this repo:
 [waste-submit-journey-tests](https://github.com/DEFRA/waste-submit-journey-tests)
 
 It contains tests for:
-* functional
-* accessibility
-* security
-* cross-browser
-* api tests
+
+- functional
+- accessibility
+- security
+- cross-browser
+- api tests
 
 It can be run within CDP against an environment from here:
 
 [CDP Test Suite](https://portal.cdp-int.defra.cloud/test-suites/waste-submit-journey-tests)
 
 See the repo for various profiles that can be run to run different types of tests.
-
 
 ## Licence
 
