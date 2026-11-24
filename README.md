@@ -24,6 +24,7 @@ Core delivery platform Node.js Frontend Template.
   - [Docker Compose](#docker-compose)
   - [Dependabot](#dependabot)
   - [SonarCloud](#sonarcloud)
+- [Test Suite] (#test-suite)
 - [Licence](#licence)
   - [About the licence](#about-the-licence)
 
@@ -222,6 +223,26 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 ### SonarCloud
 
 Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties).
+
+## Test Suite
+
+A test suite for this application exists within this repo:
+
+[waste-submit-journey-tests](https://github.com/DEFRA/waste-submit-journey-tests)
+
+It contains tests for:
+
+- functional
+- accessibility
+- security
+- cross-browser
+- api tests
+
+It can be run within CDP against an environment from here:
+
+[CDP Test Suite](https://portal.cdp-int.defra.cloud/test-suites/waste-submit-journey-tests)
+
+See the repo for various profiles that can be run to run different types of tests.
 
 ## Licence
 
