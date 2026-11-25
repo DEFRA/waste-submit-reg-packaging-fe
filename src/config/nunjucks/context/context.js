@@ -45,6 +45,7 @@ export function context(request) {
     serviceName: config.get('serviceName'),
     serviceUrl: withForwardedPrefix(request, '/'),
     cookiesHref: withForwardedPrefix(request, '/cookies'),
+    signOutHref: withForwardedPrefix(request, '/sign-out'),
     cookieName: config.get('cookieConsent.name'),
     googleTagManagerKey,
     breadcrumbs: [],

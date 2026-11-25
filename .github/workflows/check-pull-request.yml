@@ -25,10 +25,14 @@ jobs:
       - name: Build the PR's image
         run: docker build --tag defradigital/waste-submit-reg-packaging-fe:${{ github.sha }} .
 
+      # Every page needs sign-in, through the AZDCUSPOC2 B2C test tenant. See the journey tests' README, Signing in.
       - name: Run the journey tests
         uses: DEFRA/waste-submit-journey-tests/run-journey-tests@main
         with:
           waste-submit-reg-packaging-fe: ${{ github.sha }}
+          b2c-client-secret: ${{ secrets.WASTE_SUBMIT_REG_PACKAGING_FE_B2C_CLIENT_SECRET }}
+          user-email: ${{ secrets.EPR_USER_EMAIL }}
+          user-password: ${{ secrets.EPR_USER_PASSWORD }}
 
   pr-validator:
     name: Run Pull Request Checks
