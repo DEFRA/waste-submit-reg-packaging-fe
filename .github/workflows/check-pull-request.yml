@@ -30,9 +30,10 @@ jobs:
         uses: DEFRA/waste-submit-journey-tests/run-journey-tests@main
         with:
           waste-submit-reg-packaging-fe: ${{ github.sha }}
-          b2c-client-secret: ${{ secrets.WASTE_SUBMIT_REG_PACKAGING_FE_B2C_CLIENT_SECRET }}
-          user-email: ${{ secrets.EPR_USER_EMAIL }}
-          user-password: ${{ secrets.EPR_USER_PASSWORD }}
+        env:
+          WASTE_SUBMIT_REG_PACKAGING_FE_B2C_CLIENT_SECRET: ${{ secrets.WASTE_SUBMIT_REG_PACKAGING_FE_B2C_CLIENT_SECRET }}
+          EPR_USER_EMAIL: ${{ secrets.EPR_USER_EMAIL }}
+          EPR_USER_PASSWORD: ${{ secrets.EPR_USER_PASSWORD }}
 
   pr-validator:
     name: Run Pull Request Checks
