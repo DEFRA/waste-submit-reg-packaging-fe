@@ -11,7 +11,8 @@ on:
       - ready_for_review
 
 jobs:
-  # Builds the PR's code into an image and runs waste-submit-journey-tests against it in Docker Compose.
+  # Builds the PR's code into an image and runs waste-submit-journey-tests against it in Docker Compose. The frontend
+  # profile: the frontend journeys through OWASP ZAP, without the suite's checks of the backend API.
   journey-tests:
     name: Run Journey Tests
     runs-on: ubuntu-latest
@@ -29,6 +30,11 @@ jobs:
         uses: DEFRA/waste-submit-journey-tests/run-journey-tests@main
         with:
           waste-submit-reg-packaging-fe: ${{ github.sha }}
+          profile: frontend
+          # A composite action can't read secrets, so they go in as inputs.
+          b2c-client-secret: ${{ secrets.WASTE_SUBMIT_REG_PACKAGING_FE_B2C_CLIENT_SECRET }}
+          user-email: ${{ secrets.EPR_USER_EMAIL }}
+          user-password: ${{ secrets.EPR_USER_PASSWORD }}
 
   pr-validator:
     name: Run Pull Request Checks
