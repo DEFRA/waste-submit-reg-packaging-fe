@@ -1,4 +1,4 @@
-import { createServer } from '#/server/server.js'
+import { createTestServer, signIn } from '#/test-helpers/auth-helper.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 import { config } from '#/config/config.js'
 
@@ -9,12 +9,14 @@ const describeResponse = (service) =>
 
 describe('#homeController', () => {
   let server
+  let authHeaders
   const fetchMock = vi.fn()
 
   beforeAll(async () => {
     vi.stubGlobal('fetch', fetchMock)
-    server = await createServer()
+    server = await createTestServer()
     await server.initialize()
+    authHeaders = await signIn(server)
   })
 
   afterAll(async () => {
@@ -27,7 +29,8 @@ describe('#homeController', () => {
 
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
+      headers: authHeaders
     })
 
     expect(result).toEqual(expect.stringContaining('Home |'))
@@ -41,7 +44,8 @@ describe('#homeController', () => {
 
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
+      headers: authHeaders
     })
 
     expect(statusCode).toBe(statusCodes.ok)
@@ -63,7 +67,8 @@ describe('#homeController', () => {
 
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
+      headers: authHeaders
     })
 
     expect(statusCode).toBe(statusCodes.ok)
@@ -76,7 +81,8 @@ describe('#homeController', () => {
 
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/'
+      url: '/',
+      headers: authHeaders
     })
 
     expect(statusCode).toBe(statusCodes.ok)

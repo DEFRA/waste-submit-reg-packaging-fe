@@ -49,8 +49,15 @@
     useTudorCrown: true
   }) }}
 
+  {% set signOutHtml %}
+    <div class="govuk-service-navigation__item">
+      <a class="govuk-service-navigation__link" href="{{ signOutHref }}">Sign out</a>
+    </div>
+  {% endset %}
+
   {{ govukServiceNavigation({
-    navigation: navigation
+    navigation: navigation,
+    slots: { end: { html: signOutHtml, align: "inline" } } if isSignedIn else {}
   }) }}
 {% endblock %}
 

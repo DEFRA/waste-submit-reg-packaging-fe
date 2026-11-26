@@ -71,6 +71,35 @@ NO_PROXY=...
 
 No additional proxy configuration is required in the service.
 
+## User sign-in
+
+Users sign in with Azure AD B2C, following the Manage Obligations service
+([DEFRA/waste-obligations-frontend](https://github.com/DEFRA/waste-obligations-frontend)). Every page requires
+sign-in except `/health`, `/cookies` and the static assets. A signed-out user is sent to `/signin-oidc`, which
+redirects to B2C, and is returned to the page they asked for. The session lasts until its cookie expires
+(`SESSION_COOKIE_TTL`, four hours by default) or the user selects **Sign out** in the header. `/sign-out` ends the
+session here and then at B2C, which returns the user to this service's home page.
+
+| Environment variable         | Value                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------- |
+| `AZURE_AD_B2C_INSTANCE`      | e.g. `https://tenant.b2clogin.com`                                              |
+| `AZURE_AD_B2C_DOMAIN`        | e.g. `tenant.onmicrosoft.com`                                                   |
+| `AZURE_AD_B2C_USER_FLOW`     | e.g. `B2C_1A_EPR_SignUpSignIn`                                                  |
+| `AZURE_AD_B2C_CLIENT_ID`     | Client ID of this frontend's B2C app registration                               |
+| `AZURE_AD_B2C_CLIENT_SECRET` | Its client secret. A **CDP secret**                                             |
+| `AUTH_COOKIE_PASSWORD`       | Encrypts the sign-in state cookie. At least 32 characters. A **CDP secret**     |
+| `AUTH_COOKIE_SECURE`         | Defaults to `true` in production. Also makes the redirect URI sent to B2C https |
+
+The B2C app registration needs this service's public `/signin-oidc` URL as a redirect URI, for example
+`https://localhost:8018/signin-oidc` for the epr-local-environment HTTPS proxy, or `http://localhost:3000/signin-oidc`
+for `npm run dev`. The host comes from the request's `Host` header.
+
+Until the five `AZURE_AD_B2C_*` settings are set, the service starts and `/health` responds, but sign-in shows an
+error page and logs that B2C is not configured.
+
+Tests use `createTestServer()` and `signIn()` from `test-helpers/auth-helper.js`, which sign in a mock user without
+B2C.
+
 ## Backend APIs and service-to-service authentication
 
 The frontend calls its backend server side (never from the browser), authenticating with an API key sent as HTTP

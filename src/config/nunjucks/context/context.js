@@ -20,6 +20,15 @@ if (!googleTagManagerKey && config.get('isProduction')) {
 
 let viteManifest
 
+function isSignedIn(request) {
+  try {
+    return Boolean(request?.yar?.get('credentials'))
+  } catch {
+    // Error pages can render before the session is loaded, when yar.get throws.
+    return false
+  }
+}
+
 export function context(request) {
   if (config.get('isProduction') && !viteManifest) {
     try {
@@ -36,10 +45,12 @@ export function context(request) {
     serviceName: config.get('serviceName'),
     serviceUrl: withForwardedPrefix(request, '/'),
     cookiesHref: withForwardedPrefix(request, '/cookies'),
+    signOutHref: withForwardedPrefix(request, '/sign-out'),
     cookieName: config.get('cookieConsent.name'),
     googleTagManagerKey,
     breadcrumbs: [],
     navigation: buildNavigation(request),
+    isSignedIn: isSignedIn(request),
     getAssetPath(asset) {
       if (!config.get('isProduction')) {
         return `${externalAssetPath}/${asset}`

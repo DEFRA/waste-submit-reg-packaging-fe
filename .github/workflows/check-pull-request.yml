@@ -26,6 +26,7 @@ jobs:
       - name: Build the PR's image
         run: docker build --tag defradigital/waste-submit-reg-packaging-fe:${{ github.sha }} .
 
+      # Every page needs sign-in, through the AZDCUSPOC2 B2C test tenant. See the journey tests' README, Signing in.
       - name: Run the journey tests
         uses: DEFRA/waste-submit-journey-tests/run-journey-tests@main
         with:

@@ -16,9 +16,16 @@ import { contentSecurityPolicy } from './plugins/content-security-policy.js'
 import { metrics } from '@defra/cdp-metrics'
 import { cookieConsent } from '#/server/plugins/cookie-consent.js'
 import { csrf } from '#/server/plugins/csrf.js'
+import { azureAdB2cAuth } from '#/server/plugins/azure-ad-b2c-auth.js'
+import { requireAuth } from '#/server/plugins/require-auth.js'
 import { forwardedPrefixRedirects } from './plugins/forwarded-prefix-redirects.js'
 
-export async function createServer() {
+/**
+ * @param {object} [options]
+ * @param {object} [options.authPlugin] - registers the sign-in strategy. Tests replace it with
+ *   one that signs in a mock user, so they do not need Azure AD B2C.
+ */
+export async function createServer({ authPlugin = azureAdB2cAuth } = {}) {
   const server = hapi.server({
     host: config.get('host'),
     port: config.get('port'),
@@ -63,6 +70,8 @@ export async function createServer() {
     pulse,
     contentSecurityPolicy,
     sessionCache,
+    authPlugin,
+    requireAuth,
     forwardedPrefixRedirects,
     nunjucksConfig,
     Scooter,
