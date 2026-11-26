@@ -1,4 +1,4 @@
-import { createServer } from '#/server/server.js'
+import { createTestServer, signIn } from '#/test-helpers/auth-helper.js'
 import { statusCodes } from '#/server/common/constants/status-codes.js'
 
 // Each response gets fresh nonces, so compare policies with them blanked out.
@@ -7,6 +7,7 @@ const withoutNonces = (policy) =>
 
 describe('#contentSecurityPolicy', () => {
   let server
+  let authHeaders
 
   beforeAll(async () => {
     // The home page calls the backend; keep this test off the network.
@@ -14,7 +15,7 @@ describe('#contentSecurityPolicy', () => {
       'fetch',
       vi.fn().mockResolvedValue(new Response(null, { status: 503 }))
     )
-    server = await createServer()
+    server = await createTestServer()
     server.route({
       method: 'GET',
       path: '/test-only/throws',
@@ -23,6 +24,8 @@ describe('#contentSecurityPolicy', () => {
       }
     })
     await server.initialize()
+    // Every page except /health and /cookies needs sign-in, the test route included.
+    authHeaders = await signIn(server)
   })
 
   afterAll(async () => {
@@ -68,7 +71,7 @@ describe('#contentSecurityPolicy', () => {
     ])(
       'Should set the same CSP header on the $name page',
       async ({ request, statusCode }) => {
-        const resp = await server.inject(request)
+        const resp = await server.inject({ ...request, headers: authHeaders })
         const policy = resp.headers['content-security-policy']
 
         expect(resp.statusCode).toBe(statusCode)

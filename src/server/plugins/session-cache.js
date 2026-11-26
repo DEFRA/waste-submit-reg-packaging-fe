@@ -15,6 +15,9 @@ export const sessionCache = {
       cache: sessionConfig.cache.name,
       expiresIn: sessionConfig.cache.ttl
     },
+    // Always store sessions in the cache, never in the cookie, so that dropping a session
+    // on sign-in or sign-out ends it even if a copy of the old cookie is replayed.
+    maxCookieSize: 0,
     storeBlank: false,
     errorOnCacheNotReady: true,
     cookieOptions: {

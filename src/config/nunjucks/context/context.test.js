@@ -108,6 +108,7 @@ describe('context and cache', () => {
             assetPath: '/submit-packaging/public/assets',
             serviceUrl: '/submit-packaging/',
             cookiesHref: '/submit-packaging/cookies',
+            signOutHref: '/submit-packaging/sign-out',
             navigation: [
               { href: '/submit-packaging/' },
               { href: '/submit-packaging/about' }
