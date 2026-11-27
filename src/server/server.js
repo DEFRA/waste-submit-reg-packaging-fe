@@ -19,6 +19,7 @@ import { csrf } from '#/server/plugins/csrf.js'
 import { azureAdB2cAuth } from '#/server/plugins/azure-ad-b2c-auth.js'
 import { requireAuth } from '#/server/plugins/require-auth.js'
 import { forwardedPrefixRedirects } from './plugins/forwarded-prefix-redirects.js'
+import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
 
 /**
  * @param {object} [options]
@@ -26,6 +27,7 @@ import { forwardedPrefixRedirects } from './plugins/forwarded-prefix-redirects.j
  *   one that signs in a mock user, so they do not need Azure AD B2C.
  */
 export async function createServer({ authPlugin = azureAdB2cAuth } = {}) {
+  setupProxy()
   const server = hapi.server({
     host: config.get('host'),
     port: config.get('port'),
